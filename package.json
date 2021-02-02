@@ -27,9 +27,9 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --daemon --title=egg-server-parasprite_server",
+    "start": "egg-scripts start --daemon --title=egg-server-parasprite_server --sticky",
     "stop": "egg-scripts stop --title=egg-server-parasprite_server",
-    "dev": "egg-bin dev",
+    "dev": "egg-bin dev --sticky",
     "debug": "egg-bin debug",
     "test": "npm run lint -- --fix && npm run test-local",
     "test-local": "egg-bin test",
