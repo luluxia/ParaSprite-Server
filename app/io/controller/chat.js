@@ -4,8 +4,8 @@ const Controller = require('egg').Controller;
 
 class DefaultController extends Controller {
   async index() {
-    console.log('get')
-    const { ctx, app } = this;
+    console.log('get');
+    const { ctx } = this;
     const message = ctx.args[0];
     await ctx.socket.emit('res', `Hi! I've got your message: ${message}`);
   }

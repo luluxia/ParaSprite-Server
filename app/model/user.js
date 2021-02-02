@@ -7,7 +7,7 @@ module.exports = app => {
   const UserSchema = new Schema({
     mail: { type: String },
     password: { type: String },
-    avatar: { type: String }
+    avatar: { type: String },
   });
 
   return mongoose.model('User', UserSchema);

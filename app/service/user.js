@@ -15,7 +15,7 @@ class UserService extends Service {
         password: md5(params.password),
       });
       ctx.status = 200;
-      ctx.session.userId = register._id
+      ctx.session.userId = register._id;
     }
   }
 }

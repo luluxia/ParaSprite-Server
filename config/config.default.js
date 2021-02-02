@@ -34,11 +34,11 @@ module.exports = appInfo => {
     io: {
       namespace: {
         '/': {
-          connectionMiddleware: ['connection'],
+          connectionMiddleware: [ 'connection' ],
           packetMiddleware: [],
-        }
+        },
       },
-    }
+    },
   };
 
   // use for cookie sign key, should change to your own and keep security
