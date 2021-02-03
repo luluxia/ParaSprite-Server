@@ -5,8 +5,12 @@
  */
 module.exports = app => {
   const { router, controller, io } = app;
-  router.get('/', controller.home.index);
-  router.post('/api/register', controller.user.register);
-  router.post('/api/avatar', controller.upload.uploadAvatar);
+  // 新建用户
+  router.post('/api/users/new', controller.users.new);
+  // 修改单用户信息
+  router.post('/api/users/:id', controller.users.edit);
+  // 修改单用户头像
+  router.post('/api/users/:id/avatar', controller.upload.avatar);
+  // ws通信
   io.of('/').route('chat', io.controller.chat.index);
 };

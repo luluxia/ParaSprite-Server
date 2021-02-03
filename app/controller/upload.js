@@ -5,7 +5,8 @@ const fs = require('mz/fs');
 const path = require('path');
 
 module.exports = class extends Controller {
-  async uploadAvatar() {
+  // 头像上传
+  async avatar() {
     const { ctx } = this;
     if (ctx.session.userId) {
       const file = ctx.request.files[0];
@@ -13,9 +14,12 @@ module.exports = class extends Controller {
       const filePath = `app/public/avatar/${fileName}`;
       fs.renameSync(file.filepath, filePath);
       await ctx.model.User.findOneAndUpdate({ _id: ctx.session.userId }, { $set: { avatar: fileName } });
+      ctx.body = {
+        url: fileName
+      }
       ctx.status = 200;
     } else {
-      ctx.throw(500, '获取不到用户信息');
+      ctx.throw(500, '权限不足');
     }
   }
 };
