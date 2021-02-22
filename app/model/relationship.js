@@ -5,7 +5,7 @@ module.exports = app => {
   const Schema = mongoose.Schema;
 
   const RelationshipSchema = new Schema({
-    groupId: { type: String },
+    relationId: { type: String },
     userId: { type: String },
     status: { type: Boolean },
     type: { type: String },

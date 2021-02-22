@@ -6,7 +6,6 @@ module.exports = app => {
 
   const GroupSchema = new Schema({
     nick: { type: String },
-    userGroup: { type: Array },
     managerId: { type: String },
     avatar: { type: String },
   });

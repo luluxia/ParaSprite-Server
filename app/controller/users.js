@@ -8,6 +8,11 @@ class UserController extends Controller {
     const { ctx } = this;
     await ctx.service.users.login(ctx.request.body);
   }
+  // 获取联系人信息
+  async get() {
+    const { ctx } = this;
+    await ctx.service.users.get(ctx.session.userId);
+  }
   // 新建用户
   async new() {
     const { ctx } = this;

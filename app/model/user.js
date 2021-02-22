@@ -8,7 +8,10 @@ module.exports = app => {
     mail: { type: String },
     password: { type: String },
     avatar: { type: String },
-    nick: { type: String }
+    nick: { type: String },
+    online: { type: Boolean },
+    emoji: { type: String },
+    sign: { type: String }
   });
 
   return mongoose.model('User', UserSchema);

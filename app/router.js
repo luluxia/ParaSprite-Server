@@ -7,6 +7,8 @@ module.exports = app => {
   const { router, controller, io } = app;
   // 登录
   router.post('/api/login', controller.users.login);
+  // 获取联系人信息
+  router.get('/api/get', controller.users.get);
   // 新建用户
   router.post('/api/users/new', controller.users.new);
   // 添加好友
