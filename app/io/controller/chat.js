@@ -11,14 +11,14 @@ class DefaultController extends Controller {
     let sendStatus = 0;
     ctx.app.io.of('/').to('online').clients((err, clients) => {
       for (const i in clients) {
-        // console.log(ctx.socket.to(clients[i]).userId + '   ' + ctx.app.io.to(clients[i]).userId);
-        if (ctx.socket.to(clients[i]).userId == targetId) {
+        console.log(i + '  ' + clients[i] + '  ' + ctx.app.io.of('/').to('online').sockets[clients[i]].userId + '  ' + targetId);
+        if (ctx.app.io.of('/').to('online').sockets[clients[i]].userId == targetId) {
           sendStatus = 1;
-          console.log('find target')
-          ctx.app.io.to(clients[i]).emit('getMsg', {
+          console.log('send msg to ' + clients[i]);
+          ctx.app.io.of('/').to('online').sockets[clients[i]].emit('getMsg', {
             userId: userId,
             msg: msg
-          })
+          });
         }
       }
     })

@@ -7,30 +7,71 @@ class UserService extends Service {
   // 登录
   async login(data) {
     const { ctx } = this;
-    const validation = await ctx.model.User.findOneAndUpdate(
+    await ctx.model.User.findOneAndUpdate(
       { mail: data.mail, password: md5(data.password) },
       { $set: { online: true } }
-    )
-    if (validation[0]) {
-      ctx.status = 200;
-      ctx.body = { id: validation[0]._id }
-      ctx.session.userId = validation[0]._id;
-    } else {
-      ctx.throw(500, '用户名或密码错误')
-    }
+    ).then(res => {
+      if (res) {
+        ctx.status = 200;
+        ctx.body = { id: res._id };
+        ctx.session.userId = res._id;
+        console.log('now session ' + ctx.session.userId);
+      } else {
+        ctx.throw(500, '用户名或密码错误')
+      }
+    })
   }
   // 获取联系人信息
   async get(userId) {
     const { ctx } = this;
     if (userId) {
-      const usersData = await ctx.model.Relationship.find({
-        status: true,
-        type: 'user',
-        userId: userId
-      });
-      usersData.forEach(element => {
-        // TODO 格式化用户信息
-      });
+      // 返回联系人信息
+      const usersData = await ctx.model.Relationship.aggregate([
+        {
+          $match: {
+            status: true,
+            type: 'user',
+            userId: userId
+          }
+        },
+        {
+          $addFields: {
+            id: { $toObjectId: "$relationId" }
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'id',
+            foreignField: '_id',
+            as: 'include'
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            relationId: 1,
+            type: 1,
+            remark: 1,
+            group: 1,
+            groupId: 1,
+            top: 1,
+            inChat: 1,
+            lastMsg: 1,
+            lastMsgNum: 1,
+            'include._id': 1,
+            'include.mail': 1,
+            'include.nick': 1,
+            'include.avatar': 1,
+            'include.online': 1,
+            'include.emoji': 1,
+            'include.sign': 1,
+          }
+        }
+      ])
+      // TODO 返回群信息
+      ctx.status = 200;
+      ctx.body = usersData
     }
   }
   // 新建用户
@@ -43,7 +84,7 @@ class UserService extends Service {
       const register = await ctx.model.User.create({
         mail: data.mail,
         password: md5(data.password),
-        avatar: `https://api.multiavatar.com/${md5(data.mail)}.png`,
+        avatar: '',
         nick: data.mail,
         online: false,
         emoji: '',
@@ -67,20 +108,23 @@ class UserService extends Service {
       // 检查是否添加自己
       if (ctx.session.userId != targetId) {
         // 检查关系是否存在
-        const relationship = await ctx.model.Relationship.find({ relationId: targetId, userId: userId })
-        if (relationship[0]) {
-          // 检查关系是否通过
-          if (relationship[0].status) {
+        const relation = await ctx.model.Relationship.find({ relationId: targetId, userId: userId })
+        if (relation[0]) {
+          // 检查自己添加对方的关系是否通过
+          if (relation[0].status) {
             ctx.throw(500, '你们已经是好友啦！不用重复添加哟~');
           } else {
-            ctx.throw(500, '您已经添加过该用户啦~请等待对方验证通过');
+            ctx.throw(500, '您或对方已申请过好友关系，等待您或对方验证通过后就可以聊天啦');
           }
         } else {
           const defaultData = {
             status: false,
-            type: user,
+            type: 'user',
             remark: '',
             group: '我的好友',
+            groupId: 1,
+            top: 0,
+            inChat: 0,
             lastMsg: '',
             lastMsgNum: 0
           }

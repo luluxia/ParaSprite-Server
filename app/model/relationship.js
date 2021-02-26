@@ -10,9 +10,12 @@ module.exports = app => {
     status: { type: Boolean },
     type: { type: String },
     remark: { type: String },
-    group: {type: String},
-    lastMsg: {type: String},
-    lastMsgNum: {type: Number}
+    group: { type: String },
+    groupId: { type: Number },
+    top: { type: Boolean },
+    inChat: { type: Boolean },
+    lastMsg: { type: String },
+    lastMsgNum: { type: Number }
   });
 
   return mongoose.model('Relationship', RelationshipSchema);
