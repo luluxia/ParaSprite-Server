@@ -7,10 +7,7 @@ class UserService extends Service {
   // 登录
   async login(data) {
     const { ctx } = this;
-    await ctx.model.User.findOneAndUpdate(
-      { mail: data.mail, password: md5(data.password) },
-      { $set: { online: true } }
-    ).then(res => {
+    await ctx.model.User.findOne({ mail: data.mail, password: md5(data.password) }).then(res => {
       if (res) {
         ctx.status = 200;
         ctx.body = { id: res._id };
@@ -90,11 +87,26 @@ class UserService extends Service {
         emoji: '',
         sign: ''
       });
+      const userId = register._id
+      // 添加系统通知
+      await ctx.model.Relationship.create({
+        status: true,
+        type: 'user',
+        remark: '',
+        group: '我的服务',
+        groupId: 0,
+        top: 0,
+        inChat: 0,
+        lastMsg: '',
+        lastMsgNum: 0,
+        relationId: "100000000000000000000000",
+        userId: userId,
+      })
       ctx.status = 200;
       ctx.body = {
-        id: register._id
+        id: userId
       }
-      ctx.session.userId = register._id;
+      ctx.session.userId = userId;
     }
   }
   // 添加好友
@@ -124,7 +136,7 @@ class UserService extends Service {
             group: '我的好友',
             groupId: 1,
             top: 0,
-            inChat: 0,
+            inChat: 1,
             lastMsg: '',
             lastMsgNum: 0
           }
@@ -134,21 +146,126 @@ class UserService extends Service {
             relationId: targetId,
             userId: userId,
           })
-          // TODO 对方通过后添加
           await ctx.model.Relationship.create({
             ...defaultData,
             relationId: userId,
             userId: targetId,
           })
         }
+        // 返回对方数据
+        const time = new Date().getTime()
+        const targetData = await ctx.model.User.findOne({ _id: targetId }).select('_id mail nick avatar online emoji sign')
         ctx.status = 200;
-        // TODO 检查被添加人是否在线且通知
+        ctx.body = {
+          userId: '100000000000000000000000',
+          time: time,
+          content: {
+            type: 'friendReq',
+            id: targetId
+          },
+          include: targetData
+        }
+        // 检查被添加人是否在线且通知
+        let sendStatus = 0;
+        const userData = await ctx.model.User.findOne({ _id: userId }).select('_id mail nick avatar online emoji sign')
+        ctx.app.io.of('/').to('online').clients((err, clients) => {
+          for (const i in clients) {
+            if (ctx.app.io.of('/').to('online').sockets[clients[i]].userId == targetId) {
+              sendStatus = 1;
+              ctx.app.io.of('/').to('online').sockets[clients[i]].emit('getCardMsg', {
+                id: '100000000000000000000000',
+                time: time,
+                content: {
+                  type: 'friendRes',
+                  id: userId
+                },
+                include: userData
+              });
+            }
+          }
+        })
+        await ctx.model.Relationship.findOneAndUpdate({
+          relationId: '100000000000000000000000',
+          userId: userId
+        }, {
+          $set: {
+            inChat: true,
+            lastMsg: '发送了新的好友请求'
+          }
+        })
+        await ctx.model.Relationship.findOneAndUpdate({
+          relationId: '100000000000000000000000',
+          userId: targetId
+        }, {
+          $set: {
+            inChat: true,
+            lastMsg: '收到了新的好友请求'
+          }
+        })
+        // TODO 对方不在线则存入数据库
       } else {
         ctx.throw(500, '不能加自己为好友哦');
       }
     } else {
       ctx.throw(500, '啊哦，找不到该用户，请检查您输入的邮箱');
     }
+  }
+  // 同意添加好友
+  async return(data) {
+    const { ctx } = this;
+    const userId = ctx.session.userId
+    const targetId = data.id
+    let status = ''
+    if (data.accept) {
+      status = '验证通过'
+      await ctx.model.Relationship.findOneAndUpdate({
+        relationId: userId,
+        userId: targetId
+      }, {
+        $set: {
+          status: true
+        }
+      })
+      await ctx.model.Relationship.findOneAndUpdate({
+        relationId: targetId,
+        userId: userId
+      }, {
+        $set: {
+          status: true
+        }
+      })
+    } else {
+      status = '验证未通过'
+      await ctx.model.Relationship.remove({ relationId: userId, targetId: targetId })
+      await ctx.model.Relationship.remove({ relationId: targetId, targetId: userId })
+    }
+    // 返回请求
+    ctx.status = 200;
+    ctx.app.io.of('/').to('online').clients((err, clients) => {
+      for (const i in clients) {
+        if (ctx.app.io.of('/').to('online').sockets[clients[i]].userId == userId) {
+          ctx.app.io.of('/').to('online').sockets[clients[i]].emit('updateRelation');
+        }
+      }
+    })
+    // 检查被添加人是否在线且通知
+    let sendStatus = 0;
+    ctx.app.io.of('/').to('online').clients((err, clients) => {
+      for (const i in clients) {
+        if (ctx.app.io.of('/').to('online').sockets[clients[i]].userId == targetId) {
+          sendStatus = 1;
+          ctx.app.io.of('/').to('online').sockets[clients[i]].emit('updateCardMsg', {
+            id: '100000000000000000000000',
+            time: data.time,
+            update: {
+              status: status
+            }
+          });
+          ctx.app.io.of('/').to('online').sockets[clients[i]].emit('updateRelation');
+        }
+      }
+    })
+    // TODO 存入未读消息
   }
   // 修改单用户
   async edit(id, data) {

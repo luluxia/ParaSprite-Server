@@ -13,6 +13,8 @@ module.exports = app => {
   router.post('/api/users/new', controller.users.new);
   // 添加好友
   router.post('/api/users/add', controller.users.add);
+  // 处理好友申请
+  router.post('/api/users/add/return', controller.users.return);
   // 修改单用户信息
   router.post('/api/users/:id', controller.users.edit);
   // 修改单用户头像
@@ -21,4 +23,6 @@ module.exports = app => {
   io.of('/').route('sendMsg', io.controller.chat.sendMsg);
   // ws设置id
   io.of('/').route('setId', io.controller.users.setId);
+  // ws设置未读消息递增
+  io.of('/').route('addLastMsgNum', io.controller.chat.addLastMsgNum);
 };
