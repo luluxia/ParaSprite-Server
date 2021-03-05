@@ -56,6 +56,7 @@ class UserService extends Service {
             inChat: 1,
             lastMsg: 1,
             lastMsgNum: 1,
+            lastActiveTime: 1,
             'include._id': 1,
             'include.mail': 1,
             'include.nick': 1,
@@ -99,6 +100,7 @@ class UserService extends Service {
         inChat: 0,
         lastMsg: '',
         lastMsgNum: 0,
+        lastActiveTime: new Date().getTime(),
         relationId: "100000000000000000000000",
         userId: userId,
       })
@@ -223,7 +225,8 @@ class UserService extends Service {
         userId: targetId
       }, {
         $set: {
-          status: true
+          status: true,
+          lastActiveTime: data.time
         }
       })
       await ctx.model.Relationship.findOneAndUpdate({
@@ -231,7 +234,8 @@ class UserService extends Service {
         userId: userId
       }, {
         $set: {
-          status: true
+          status: true,
+          lastActiveTime: data.time
         }
       })
     } else {

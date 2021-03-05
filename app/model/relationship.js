@@ -15,7 +15,8 @@ module.exports = app => {
     top: { type: Boolean },
     inChat: { type: Boolean },
     lastMsg: { type: String },
-    lastMsgNum: { type: Number }
+    lastMsgNum: { type: Number },
+    lastActiveTime: { type: String }
   });
 
   return mongoose.model('Relationship', RelationshipSchema);

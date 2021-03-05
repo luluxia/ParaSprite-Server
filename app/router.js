@@ -25,4 +25,6 @@ module.exports = app => {
   io.of('/').route('setId', io.controller.users.setId);
   // ws设置未读消息递增
   io.of('/').route('addLastMsgNum', io.controller.chat.addLastMsgNum);
+  // ws清空未读消息
+  io.of('/').route('clearLastMsgNum', io.controller.chat.clearLastMsgNum);
 };
