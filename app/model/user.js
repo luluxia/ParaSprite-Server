@@ -11,7 +11,8 @@ module.exports = app => {
     nick: { type: String },
     online: { type: Boolean },
     emoji: { type: String },
-    sign: { type: String }
+    sign: { type: String },
+    socketId: { type: String }
   });
 
   return mongoose.model('User', UserSchema);

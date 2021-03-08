@@ -168,24 +168,22 @@ class UserService extends Service {
           include: targetData
         }
         // 检查被添加人是否在线且通知
-        let sendStatus = 0;
         const userData = await ctx.model.User.findOne({ _id: userId }).select('_id mail nick avatar online emoji sign')
-        ctx.app.io.of('/').to('online').clients((err, clients) => {
-          for (const i in clients) {
-            if (ctx.app.io.of('/').to('online').sockets[clients[i]].userId == targetId) {
-              sendStatus = 1;
-              ctx.app.io.of('/').to('online').sockets[clients[i]].emit('getCardMsg', {
-                id: '100000000000000000000000',
-                time: time,
-                content: {
-                  type: 'friendRes',
-                  id: userId
-                },
-                include: userData
-              });
-            }
-          }
-        })
+        // 查找socket连接
+        const targetSocketId = (await ctx.model.User.findOne({ _id: targetId })).socketId;
+        if (targetSocketId) {
+          ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('getCardMsg', {
+            id: '100000000000000000000000',
+            time: time,
+            content: {
+              type: 'friendRes',
+              id: userId
+            },
+            include: userData
+          });
+        } else {
+          // TODO 未读消息存入数据库
+        }
         await ctx.model.Relationship.findOneAndUpdate({
           relationId: '100000000000000000000000',
           userId: userId
@@ -212,7 +210,7 @@ class UserService extends Service {
       ctx.throw(500, '啊哦，找不到该用户，请检查您输入的邮箱');
     }
   }
-  // 同意添加好友
+  // 好友请求反馈
   async return(data) {
     const { ctx } = this;
     const userId = ctx.session.userId
@@ -245,31 +243,25 @@ class UserService extends Service {
     }
     // 返回请求
     ctx.status = 200;
-    ctx.app.io.of('/').to('online').clients((err, clients) => {
-      for (const i in clients) {
-        if (ctx.app.io.of('/').to('online').sockets[clients[i]].userId == userId) {
-          ctx.app.io.of('/').to('online').sockets[clients[i]].emit('updateRelation');
+
+    // 添加人刷新关系
+    const userSocketId = (await ctx.model.User.findOne({ _id: userId })).socketId;
+    ctx.app.io.of('/').to('online').sockets[userSocketId].emit('updateRelation');
+
+    // 查找被添加人socket连接
+    const targetSocketId = (await ctx.model.User.findOne({ _id: targetId })).socketId;
+    if (targetSocketId) {
+      ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('updateCardMsg', {
+        id: '100000000000000000000000',
+        time: data.time,
+        update: {
+          status: status
         }
-      }
-    })
-    // 检查被添加人是否在线且通知
-    let sendStatus = 0;
-    ctx.app.io.of('/').to('online').clients((err, clients) => {
-      for (const i in clients) {
-        if (ctx.app.io.of('/').to('online').sockets[clients[i]].userId == targetId) {
-          sendStatus = 1;
-          ctx.app.io.of('/').to('online').sockets[clients[i]].emit('updateCardMsg', {
-            id: '100000000000000000000000',
-            time: data.time,
-            update: {
-              status: status
-            }
-          });
-          ctx.app.io.of('/').to('online').sockets[clients[i]].emit('updateRelation');
-        }
-      }
-    })
-    // TODO 存入未读消息
+      });
+      ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('updateRelation');
+    } else {
+      // TODO 未读消息存入数据库
+    }
   }
   // 修改单用户
   async edit(id, data) {

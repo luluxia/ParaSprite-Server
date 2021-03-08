@@ -23,7 +23,7 @@ class UserController extends Controller {
     const { ctx } = this;
     await ctx.service.users.add(ctx.request.body);
   }
-  // 同意添加好友
+  // 好友请求反馈
   async return() {
     const { ctx } = this;
     await ctx.service.users.return(ctx.request.body);

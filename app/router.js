@@ -13,7 +13,7 @@ module.exports = app => {
   router.post('/api/users/new', controller.users.new);
   // 添加好友
   router.post('/api/users/add', controller.users.add);
-  // 处理好友申请
+  // 好友请求反馈
   router.post('/api/users/add/return', controller.users.return);
   // 修改单用户信息
   router.post('/api/users/:id', controller.users.edit);
