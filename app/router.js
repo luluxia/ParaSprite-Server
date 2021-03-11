@@ -9,6 +9,8 @@ module.exports = app => {
   router.post('/api/login', controller.users.login);
   // 获取联系人信息
   router.get('/api/get', controller.users.get);
+  // 获取未读消息
+  router.get('/api/message', controller.users.getUnread);
   // 新建用户
   router.post('/api/users/new', controller.users.new);
   // 添加好友

@@ -13,6 +13,11 @@ class UserController extends Controller {
     const { ctx } = this;
     await ctx.service.users.get(ctx.session.userId);
   }
+  // 获取未读消息
+  async getUnread() {
+    const { ctx } = this;
+    await ctx.service.users.getUnread(ctx.session.userId);
+  }
   // 新建用户
   async new() {
     const { ctx } = this;

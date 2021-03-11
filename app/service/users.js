@@ -72,6 +72,14 @@ class UserService extends Service {
       ctx.body = usersData
     }
   }
+  // 获取未读消息
+  async getUnread(userId) {
+    const { ctx } = this;
+    const message = await ctx.model.Message.find({ to: userId }).select('to type content');
+    await ctx.model.Message.remove({ to: userId });
+    ctx.status = 200;
+    ctx.body = message;
+  }
   // 新建用户
   async new(data) {
     const { ctx } = this;

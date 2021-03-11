@@ -9,18 +9,23 @@ class DefaultController extends Controller {
     const msg = ctx.args[0].msg;
     const targetId = ctx.args[0].userId;
     const time = ctx.args[0].time;
-    let sendStatus = 0;
     // 查找socket连接
     const targetSocketId = (await ctx.model.User.findOne({ _id: targetId })).socketId;
+    const sendContent = {
+      id: userId,
+      content: msg,
+      type: 'user',
+      time: String(time)
+    }
     if (targetSocketId) {
-      ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('getMsg', {
-        id: userId,
-        content: msg,
-        type: 'user',
-        time: time
-      });
+      ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('getMsg', sendContent);
     } else {
       // TODO 未读消息存入数据库
+      ctx.model.Message.create({
+        to: targetId,
+        type: 'msg',
+        content: sendContent
+      })
     }
     // 修改关系状态
     await ctx.model.Relationship.findOneAndUpdate({
