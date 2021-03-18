@@ -5,6 +5,8 @@
  */
 module.exports = app => {
   const { router, controller, io } = app;
+  // 测试
+  router.get('/api/test', controller.home.index);
   // 登录
   router.post('/api/login', controller.users.login);
   // 获取联系人信息
@@ -17,6 +19,8 @@ module.exports = app => {
   router.post('/api/users/add', controller.users.add);
   // 好友请求反馈
   router.post('/api/users/add/return', controller.users.return);
+  // 搜索好友
+  router.post('/api/users/search', controller.users.search);
   // 修改单用户信息
   router.post('/api/users/:id', controller.users.edit);
   // 修改单用户头像

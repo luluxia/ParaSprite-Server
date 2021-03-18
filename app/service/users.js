@@ -7,10 +7,12 @@ class UserService extends Service {
   // 登录
   async login(data) {
     const { ctx } = this;
-    await ctx.model.User.findOne({ mail: data.mail, password: md5(data.password) }).then(res => {
+    await ctx.model.User.findOne({ mail: data.mail, password: md5(data.password) }).select(
+      'nick avatar online emoji sign'
+    ).then(res => {
       if (res) {
         ctx.status = 200;
-        ctx.body = { id: res._id };
+        ctx.body = res;
         ctx.session.userId = res._id;
         console.log('now session ' + ctx.session.userId);
       } else {
@@ -114,8 +116,13 @@ class UserService extends Service {
       })
       ctx.status = 200;
       ctx.body = {
-        id: userId
-      }
+        _id: register._id,
+        nick: register.nick,
+        avatar: register.avatar,
+        online: register.online,
+        emoji: register.emoji,
+        sign: register.sign
+      };
       ctx.session.userId = userId;
     }
   }
@@ -127,6 +134,7 @@ class UserService extends Service {
     if (validation[0]) {
       const targetId = String(validation[0]._id);
       const userId = ctx.session.userId
+      console.log(userId)
       // 检查是否添加自己
       if (ctx.session.userId != targetId) {
         // 检查关系是否存在
@@ -271,12 +279,33 @@ class UserService extends Service {
       // TODO 未读消息存入数据库
     }
   }
+  // 搜索好友
+  async search(data) {
+    const { ctx } = this;
+    const search = await ctx.model.User.find({
+      $or: [
+        { mail: { $regex: data.input } },
+        { nick: { $regex: data.input } }
+      ],
+      mail: { $ne: '' }
+    }).select('mail avatar nick online emoji sign')
+    ctx.status = 200;
+    ctx.body = search;
+  }
   // 修改单用户
   async edit(id, data) {
     const { ctx } = this;
     if (ctx.session.userId == id) {
-      await ctx.model.User.findOneAndUpdate({ _id: id }, { $set: { nick: data.nick } });
+      const change = await ctx.model.User.findOneAndUpdate({ _id: id }, { $set: { nick: data.nick } });
       ctx.status = 200;
+      ctx.body = {
+        _id: change._id,
+        nick: data.nick,
+        avatar: change.avatar,
+        online: change.online,
+        emoji: change.emoji,
+        sign: change.sign
+      };
     } else {
       ctx.throw(500, ctx.session.userId)
     }
