@@ -10,7 +10,7 @@ module.exports = () => {
       { _id: id },
       { $set: { online: true, socketId: ctx.socket.id } }
     )
-    const contactList = await ctx.model.Relationship.aggregate([
+    const search = [
       {
         $match: {
           status: true,
@@ -43,7 +43,8 @@ module.exports = () => {
           'include.socketId': { $ne: '' },
         }
       }
-    ])
+    ]
+    const contactList = await ctx.model.Relationship.aggregate(search)
     contactList.forEach(element => {
       ctx.app.io.of('/').to('online').sockets[element.include[0].socketId]?.emit('updateRelation');
     });
@@ -54,6 +55,7 @@ module.exports = () => {
       { _id: ctx.session.userId },
       { $set: { online: false, socketId: '' } }
     )
+    const contactList = await ctx.model.Relationship.aggregate(search)
     contactList.forEach(element => {
       ctx.app.io.of('/').to('online').sockets[element.include[0].socketId]?.emit('updateRelation');
     });
