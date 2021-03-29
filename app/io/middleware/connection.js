@@ -3,6 +3,7 @@
 module.exports = () => {
   return async (ctx, next) => {
     const id = ctx.session.userId
+    let contactList = []
     console.log('用户上线：' + id + ' ' + ctx.socket.id);
     ctx.socket.join('online');
     ctx.socket.emit('res', 'connected!');
@@ -44,7 +45,7 @@ module.exports = () => {
         }
       }
     ]
-    const contactList = await ctx.model.Relationship.aggregate(search)
+    contactList = await ctx.model.Relationship.aggregate(search)
     contactList.forEach(element => {
       ctx.app.io.of('/').to('online').sockets[element.include[0].socketId]?.emit('updateRelation');
     });
@@ -55,7 +56,7 @@ module.exports = () => {
       { _id: ctx.session.userId },
       { $set: { online: false, socketId: '' } }
     )
-    const contactList = await ctx.model.Relationship.aggregate(search)
+    contactList = await ctx.model.Relationship.aggregate(search)
     contactList.forEach(element => {
       ctx.app.io.of('/').to('online').sockets[element.include[0].socketId]?.emit('updateRelation');
     });
