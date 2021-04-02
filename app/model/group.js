@@ -6,8 +6,9 @@ module.exports = app => {
 
   const GroupSchema = new Schema({
     nick: { type: String },
-    managerId: { type: String },
     avatar: { type: String },
+    intro: { type: String },
+    managerId: { type: String }
   });
 
   return mongoose.model('Group', GroupSchema);

@@ -69,9 +69,54 @@ class UserService extends Service {
           }
         }
       ])
+      const groupsData = await ctx.model.Relationship.aggregate([
+        {
+          $match: {
+            status: true,
+            type: 'group',
+            userId: userId
+          }
+        },
+        {
+          $addFields: {
+            id: { $toObjectId: "$relationId" }
+          }
+        },
+        {
+          $lookup: {
+            from: 'groups',
+            localField: 'id',
+            foreignField: '_id',
+            as: 'include'
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            relationId: 1,
+            type: 1,
+            remark: 1,
+            group: 1,
+            groupId: 1,
+            top: 1,
+            inChat: 1,
+            lastMsg: 1,
+            lastMsgNum: 1,
+            lastActiveTime: 1,
+            'include._id': 1,
+            'include.nick': 1,
+            'include.avatar': 1,
+            'include.intro': 1
+          }
+        }
+      ])
+      const returnData = [
+        ...usersData,
+        ...groupsData
+      ]
       // TODO 返回群信息
       ctx.status = 200;
-      ctx.body = usersData
+      ctx.body = returnData
     }
   }
   // 获取未读消息

@@ -25,6 +25,10 @@ module.exports = app => {
   router.post('/api/users/:id', controller.users.edit);
   // 修改单用户头像
   router.post('/api/users/:id/avatar', controller.upload.avatar);
+  // 上传图片
+  router.post('/api/upload/img', controller.upload.img);
+  // 创建群聊
+  router.post('/api/groups/create', controller.groups.create);
   // ws通信
   io.of('/').route('sendMsg', io.controller.chat.sendMsg);
   // ws设置id
