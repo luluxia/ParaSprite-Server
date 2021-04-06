@@ -20,7 +20,7 @@ class DefaultController extends Controller {
     if (targetSocketId) {
       ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('getMsg', sendContent);
     } else {
-      // TODO 未读消息存入数据库
+      // 未读消息存入数据库
       ctx.model.Message.create({
         to: targetId,
         type: 'msg',

@@ -114,7 +114,6 @@ class UserService extends Service {
         ...usersData,
         ...groupsData
       ]
-      // TODO 返回群信息
       ctx.status = 200;
       ctx.body = returnData
     }
@@ -232,18 +231,24 @@ class UserService extends Service {
         const userData = await ctx.model.User.findOne({ _id: userId }).select('_id mail nick avatar online emoji sign')
         // 查找socket连接
         const targetSocketId = (await ctx.model.User.findOne({ _id: targetId })).socketId;
+        const cardMsg = {
+          id: '100000000000000000000000',
+          time: time,
+          content: {
+            type: 'friendRes',
+            id: userId
+          },
+          include: userData
+        };
         if (targetSocketId) {
-          ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('getCardMsg', {
-            id: '100000000000000000000000',
-            time: time,
-            content: {
-              type: 'friendRes',
-              id: userId
-            },
-            include: userData
-          });
+          ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('getCardMsg', cardMsg);
         } else {
-          // TODO 未读消息存入数据库
+          // 未读消息存入数据库
+          ctx.model.Message.create({
+            to: targetId,
+            type: 'cardMsg',
+            content: cardMsg
+          })
         }
         await ctx.model.Relationship.findOneAndUpdate({
           relationId: '100000000000000000000000',
@@ -263,7 +268,6 @@ class UserService extends Service {
             lastMsg: '收到了新的好友请求'
           }
         })
-        // TODO 对方不在线则存入数据库
       } else {
         ctx.throw(500, '不能加自己为好友哦');
       }
@@ -311,17 +315,23 @@ class UserService extends Service {
 
     // 查找被添加人socket连接
     const targetSocketId = (await ctx.model.User.findOne({ _id: targetId })).socketId;
+    const updateCardMsg = {
+      id: '100000000000000000000000',
+      time: data.time,
+      update: {
+        status: status
+      }
+    };
     if (targetSocketId) {
-      ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('updateCardMsg', {
-        id: '100000000000000000000000',
-        time: data.time,
-        update: {
-          status: status
-        }
-      });
+      ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('updateCardMsg', updateCardMsg);
       ctx.app.io.of('/').to('online').sockets[targetSocketId].emit('updateRelation');
     } else {
-      // TODO 未读消息存入数据库
+      // 未读消息存入数据库
+      ctx.model.Message.create({
+        to: targetId,
+        type: 'updateCardMsg',
+        content: updateCardMsg
+      })
     }
   }
   // 搜索好友
