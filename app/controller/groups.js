@@ -8,6 +8,11 @@ class GroupController extends Controller {
     const { ctx } = this;
     await ctx.service.groups.create(ctx.request.body);
   }
+  // 群聊邀请
+  async invite() {
+    const { ctx } = this;
+    await ctx.service.groups.invite(ctx.params.id, ctx.request.body);
+  }
 }
 
 module.exports = GroupController;
