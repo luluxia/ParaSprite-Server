@@ -34,6 +34,47 @@ class GroupsService extends Service {
       id: groupId
     };
   }
+  // 获取群成员
+  async getUsers(groupId) {
+    const { ctx } = this;
+    // 返回联系人信息
+    const usersData = await ctx.model.Relationship.aggregate([
+      {
+        $match: {
+          status: true,
+          type: 'group',
+          relationId: groupId
+        }
+      },
+      {
+        $addFields: {
+          id: { $toObjectId: "$userId" }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'id',
+          foreignField: '_id',
+          as: 'include'
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          'include._id': 1,
+          'include.mail': 1,
+          'include.nick': 1,
+          'include.avatar': 1,
+          'include.online': 1,
+          'include.emoji': 1,
+          'include.sign': 1,
+        }
+      }
+    ]);
+    ctx.status = 200;
+    ctx.body = usersData;
+  } 
   // 群聊邀请
   async invite(groupId, data) {
     const { ctx } = this;

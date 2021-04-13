@@ -29,6 +29,8 @@ module.exports = app => {
   router.post('/api/upload/img', controller.upload.img);
   // 创建群聊
   router.post('/api/groups/create', controller.groups.create);
+  // 获取群成员
+  router.get('/api/groups/:id/users', controller.groups.getUsers);
   // 群聊邀请
   router.post('/api/groups/:id/invite', controller.groups.invite);
   // 群聊反馈
