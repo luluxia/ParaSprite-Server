@@ -13,6 +13,11 @@ class GroupController extends Controller {
     const { ctx } = this;
     await ctx.service.groups.invite(ctx.params.id, ctx.request.body);
   }
+  // 群聊邀请
+  async return() {
+    const { ctx } = this;
+    await ctx.service.groups.return(ctx.params.id, ctx.request.body);
+  }
 }
 
 module.exports = GroupController;

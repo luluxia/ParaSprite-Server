@@ -31,6 +31,8 @@ module.exports = app => {
   router.post('/api/groups/create', controller.groups.create);
   // 群聊邀请
   router.post('/api/groups/:id/invite', controller.groups.invite);
+  // 群聊反馈
+  router.post('/api/groups/:id/return', controller.groups.return);
   // ws通信
   io.of('/').route('sendMsg', io.controller.chat.sendMsg);
   // ws设置id
