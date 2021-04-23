@@ -35,8 +35,10 @@ module.exports = app => {
   router.post('/api/groups/:id/invite', controller.groups.invite);
   // 群聊反馈
   router.post('/api/groups/:id/return', controller.groups.return);
-  // ws通信
+  // ws单聊
   io.of('/').route('sendMsg', io.controller.chat.sendMsg);
+  // ws群聊
+  io.of('/').route('sendGroupMsg', io.controller.chat.sendGroupMsg);
   // ws设置id
   io.of('/').route('setId', io.controller.users.setId);
   // ws设置未读消息递增
