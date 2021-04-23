@@ -16,7 +16,8 @@ module.exports = app => {
     inChat: { type: Boolean },
     lastMsg: { type: String },
     lastMsgNum: { type: Number },
-    lastActiveTime: { type: String }
+    lastActiveTime: { type: String },
+    groupType: { type: String }
   });
 
   return mongoose.model('Relationship', RelationshipSchema);

@@ -27,6 +27,7 @@ class GroupsService extends Service {
       lastActiveTime: new Date().getTime(),
       relationId: groupId,
       userId: userId,
+      groupType: 'creator'
     })
     ctx.app.io.of('/').to('online').sockets[userSocketId].emit('updateRelation');
     ctx.status = 200;
@@ -62,6 +63,7 @@ class GroupsService extends Service {
       {
         $project: {
           _id: 0,
+          groupType: 1,
           'include._id': 1,
           'include.mail': 1,
           'include.nick': 1,
