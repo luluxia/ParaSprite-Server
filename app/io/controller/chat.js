@@ -59,9 +59,10 @@ class DefaultController extends Controller {
     const groupId = ctx.args[0].groupId;
     const time = ctx.args[0].time;
     const sendContent = {
-      id: userId,
+      id: groupId,
+      from: userId,
       content: msg,
-      type: 'user',
+      type: 'group',
       time: String(time)
     }
     // 返回联系人信息
@@ -99,12 +100,12 @@ class DefaultController extends Controller {
     usersData.forEach(async user => {
       const data = user.include[0];
       if (data.socketId) {
-        ctx.app.io.of('/').to('online').sockets[data.socketId].emit('getGroupMsg', sendContent);
+        ctx.app.io.of('/').to('online').sockets[data.socketId].emit('getMsg', sendContent);
       } else {
         // 未读消息存入数据库
         ctx.model.Message.create({
           to: data._id,
-          type: 'groupMsg',
+          type: 'msg',
           content: sendContent
         });
       }
