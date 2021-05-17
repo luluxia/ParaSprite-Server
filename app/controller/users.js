@@ -38,10 +38,30 @@ class UserController extends Controller {
     const { ctx } = this;
     await ctx.service.users.search(ctx.request.body);
   }
-  // 修改单用户
+  // 修改用户昵称
   async edit() {
     const { ctx } = this;
     await ctx.service.users.edit(ctx.params.id, ctx.request.body);
+  }
+  // 修改用户个性签名
+  async editSign() {
+    const { ctx } = this;
+    await ctx.service.users.editSign(ctx.params.id, ctx.request.body);
+  }
+  // 修改置顶状态
+  async changeTop() {
+    const { ctx } = this;
+    await ctx.service.users.changeTop(ctx.params.id);
+  }
+  // 移出消息列表
+  async remove() {
+    const { ctx } = this;
+    await ctx.service.users.remove(ctx.params.id);
+  }
+  // 移出消息列表
+  async delete() {
+    const { ctx } = this;
+    await ctx.service.users.delete(ctx.params.id);
   }
 }
 

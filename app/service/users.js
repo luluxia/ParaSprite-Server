@@ -347,7 +347,7 @@ class UserService extends Service {
     ctx.status = 200;
     ctx.body = search;
   }
-  // 修改单用户
+  // 修改用户昵称
   async edit(id, data) {
     const { ctx } = this;
     if (ctx.session.userId == id) {
@@ -364,6 +364,57 @@ class UserService extends Service {
     } else {
       ctx.throw(500, ctx.session.userId)
     }
+  }
+  // 修改用户个性签名
+  async editSign(id, data) {
+    const { ctx } = this;
+    if (ctx.session.userId == id) {
+      const change = await ctx.model.User.findOneAndUpdate({ _id: id }, { $set: { sign: data.sign } });
+      ctx.status = 200;
+      ctx.body = {
+        _id: change._id,
+        nick: change.nick,
+        avatar: change.avatar,
+        online: change.online,
+        emoji: change.emoji,
+        sign: data.sign
+      };
+    } else {
+      ctx.throw(500, ctx.session.userId)
+    }
+  }
+  // 修改置顶
+  async changeTop(id) {
+    const { ctx } = this;
+    const userId = ctx.session.userId;
+    const targetId = id;
+    const top = (await ctx.model.Relationship.findOne({ userId: userId, relationId: targetId })).top;
+    await ctx.model.Relationship.findOneAndUpdate({ userId: userId, relationId: targetId }, { $set: { top: !top } });
+    const userSocketId = (await ctx.model.User.findOne({ _id: userId })).socketId;
+    ctx.app.io.of('/').to('online').sockets[userSocketId].emit('updateRelation');
+    ctx.status = 200;
+  }
+  // 移出消息列表
+  async remove(id) {
+    const { ctx } = this;
+    const userId = ctx.session.userId;
+    const targetId = id;
+    const inChat = (await ctx.model.Relationship.findOne({ userId: userId, relationId: targetId })).inChat;
+    await ctx.model.Relationship.findOneAndUpdate({ userId: userId, relationId: targetId }, { $set: { inChat: !inChat } });
+    const userSocketId = (await ctx.model.User.findOne({ _id: userId })).socketId;
+    ctx.app.io.of('/').to('online').sockets[userSocketId].emit('updateRelation');
+    ctx.status = 200;
+  }
+  // 删除联系人
+  async delete(id) {
+    const { ctx } = this;
+    const userId = ctx.session.userId;
+    const targetId = id;
+    await ctx.model.Relationship.findOneAndRemove({ userId: userId, relationId: targetId });
+    await ctx.model.Relationship.findOneAndRemove({ userId: targetId, relationId: userId });
+    const userSocketId = (await ctx.model.User.findOne({ _id: userId })).socketId;
+    ctx.app.io.of('/').to('online').sockets[userSocketId].emit('updateRelation');
+    ctx.status = 200;
   }
 }
 

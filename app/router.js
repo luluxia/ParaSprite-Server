@@ -21,8 +21,16 @@ module.exports = app => {
   router.post('/api/users/add/return', controller.users.return);
   // 搜索好友
   router.post('/api/users/search', controller.users.search);
-  // 修改单用户信息
+  // 修改用户昵称
   router.post('/api/users/:id', controller.users.edit);
+  // 修改用户个性签名
+  router.post('/api/users/:id/sign', controller.users.editSign);
+  // 修改置顶状态
+  router.get('/api/:id/top', controller.users.changeTop);
+  // 移出消息列表
+  router.get('/api/:id/remove', controller.users.remove);
+  // 删除联系人
+  router.get('/api/:id/delete', controller.users.delete);
   // 修改单用户头像
   router.post('/api/users/:id/avatar', controller.upload.avatar);
   // 上传图片
