@@ -35,6 +35,8 @@ module.exports = app => {
   router.post('/api/users/:id/avatar', controller.upload.avatar);
   // 上传图片
   router.post('/api/upload/img', controller.upload.img);
+  // 上传文件
+  router.post('/api/upload/file', controller.upload.file);
   // 创建群聊
   router.post('/api/groups/create', controller.groups.create);
   // 获取群成员

@@ -38,4 +38,20 @@ module.exports = class extends Controller {
       ctx.throw(500, '权限不足');
     }
   }
+  // 文件上传
+  async file() {
+    const { ctx } = this;
+    if (ctx.session.userId) {
+      const file = ctx.request.files[0];
+      const fileName = `${new Date().getTime()}${path.extname(file.filename)}`;
+      const filePath = `app/public/file/${fileName}`;
+      fs.renameSync(file.filepath, filePath);
+      ctx.body = {
+        url: `file/${fileName}`
+      }
+      ctx.status = 200;
+    } else {
+      ctx.throw(500, '权限不足');
+    }
+  }
 };

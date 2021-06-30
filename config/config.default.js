@@ -30,6 +30,8 @@ module.exports = appInfo => {
     },
     multipart: {
       mode: 'file',
+      whitelist: (filename) => true,
+      fileSize: '100mb',
     },
     io: {
       namespace: {
